@@ -6,11 +6,18 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { clusterApiUrl } from "@solana/web3.js";
 
 export default function WalletContextProvider({ children }: { children: ReactNode }) {
-  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC!;
+  const envEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC;
+  const endpoint = typeof envEndpoint === "string" && /^https?:/i.test(envEndpoint)
+    ? envEndpoint
+    : clusterApiUrl(WalletAdapterNetwork.Devnet);
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: WalletAdapterNetwork.Devnet })],
+    () =>
+      typeof window === "undefined"
+        ? []
+        : [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: WalletAdapterNetwork.Devnet })],
     []
   );
   return (
